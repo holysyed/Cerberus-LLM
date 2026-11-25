@@ -1,4 +1,4 @@
-# Cerberus
+# Cerberus-LLM
 
 Cerberus is a Python library and FastAPI gateway for screening what goes into an LLM and what comes back. The input guard inspects the user message, retrieved documents, and tool results. The output guards can block a reply, remove sensitive data, or enforce an application-owned response schema. A third component evaluates guard decisions and recorded application responses offline.
 
