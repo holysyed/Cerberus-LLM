@@ -1,0 +1,7 @@
+include Dockerfile compose.yaml .dockerignore .env.example SETUP.md
+include .streamlit/config.toml .github/workflows/ci.yml
+recursive-include dashboard *.py
+recursive-include examples *.py
+recursive-include tests *.py
+recursive-include docs *.md *.png
+recursive-include benchmarks *.py *.json *.jsonl *.md

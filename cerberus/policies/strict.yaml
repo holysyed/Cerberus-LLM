@@ -1,0 +1,24 @@
+mode: sanitize
+fail_mode: closed
+threshold: 0.65
+critical_threshold: 0.95
+guards: {}
+input:
+  ml_enabled: false
+  judge_enabled: false
+  heuristic_weight: 1.0
+  ml_weight: 0.9
+  judge_weight: 0.8
+  ml_threshold: 0.5
+  judge_threshold: 0.5
+  max_sources: 16
+  max_source_chars: 32768
+  max_total_chars: 65536
+output:
+  pii_mode: redact
+  ner_enabled: false
+  ner_model: en_core_web_sm
+  max_retries: 1
+  grounding_enabled: false
+  grounding_threshold: 0.65
+  max_chars: 32768

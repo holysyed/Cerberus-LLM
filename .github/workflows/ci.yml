@@ -1,0 +1,37 @@
+name: Cerberus CI
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - run: python -m pip install -e ".[dev,benchmark,dashboard]"
+      - run: python -m ruff check .
+      - run: python -m mypy
+      - run: python -m pytest -q --cov=cerberus --cov=dashboard --cov-report=term-missing --cov-fail-under=80
+      - run: python -m build
+  containers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start services and check both health endpoints
+        run: |
+          echo "CERBERUS_API_KEY=$(openssl rand -hex 32)" > .env
+          docker compose up --build --wait --wait-timeout 150
+          curl --fail --silent http://127.0.0.1:8000/health
+          curl --fail --silent http://127.0.0.1:8501/_stcore/health
+          docker compose exec -T gateway python -m examples.demo --database /data/cerberus.sqlite3
+          docker compose exec -T dashboard python -c "import os; from cerberus.core.audit import AuditStore; s=AuditStore(os.environ['CERBERUS_DATABASE_URL'], read_only=True); assert len(s.request_activity()) == 12 and len(s.recent_reports()) == 1; s.close()"
+      - if: always()
+        run: docker compose down

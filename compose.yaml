@@ -1,0 +1,42 @@
+services:
+  gateway:
+    build: .
+    image: cerberus-llm:local
+    env_file: .env
+    environment:
+      CERBERUS_API_KEY: ${CERBERUS_API_KEY:?Set CERBERUS_API_KEY in .env}
+      CERBERUS_DATABASE_URL: sqlite:////data/cerberus.sqlite3
+      CERBERUS_PROVIDER_URL: ${CERBERUS_PROVIDER_URL:-http://host.docker.internal:11434}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - audit:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2).close()"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+      start_period: 10s
+
+  dashboard:
+    image: cerberus-llm:local
+    pull_policy: never
+    depends_on:
+      gateway:
+        condition: service_healthy
+    command: ["python", "-m", "streamlit", "run", "dashboard/app.py", "--server.address=0.0.0.0", "--server.port=8501", "--server.headless=true"]
+    ports:
+      - "127.0.0.1:8501:8501"
+    volumes:
+      - audit:/data:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8501/_stcore/health', timeout=2).close()"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+      start_period: 10s
+
+volumes:
+  audit:

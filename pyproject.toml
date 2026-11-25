@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cerberus-llm-guards"
+version = "0.1.0"
+description = "Composable input and output guardrails for LLM applications"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+dependencies = [
+  "pydantic>=2.9,<3", "PyYAML>=6,<7", "SQLAlchemy>=2,<3",
+  "fastapi>=0.115,<1", "uvicorn>=0.30,<1", "httpx>=0.27,<1",
+  "jsonschema>=4.23,<5", "python-dotenv>=1,<2",
+]
+
+[project.scripts]
+cerberus-dashboard = "cerberus.dashboard:launch"
+
+[project.optional-dependencies]
+dev = ["ruff>=0.11", "mypy>=1.15", "pytest>=8", "pytest-cov>=6", "types-PyYAML", "types-jsonschema", "build"]
+benchmark = ["pyarrow>=16"]
+ml = ["transformers>=4.48,<5", "torch>=2.4", "sentencepiece>=0.2"]
+ner = ["spacy>=3.8,<4"]
+dashboard = ["streamlit>=1.42,<2"]
+examples = ["langchain-core>=0.3,<2", "langgraph>=0.3,<2"]
+
+[tool.setuptools.packages.find]
+include = ["cerberus*"]
+
+[tool.setuptools.package-data]
+cerberus = ["py.typed", "policies/*.yaml", "redteam/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+files = ["cerberus", "benchmarks", "dashboard", "examples/demo.py"]
+
+[tool.coverage.run]
+source = ["cerberus"]
+branch = true
